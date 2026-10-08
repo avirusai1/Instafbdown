@@ -88,6 +88,7 @@ class Job:
                     stderr=subprocess.STDOUT,
                     text=True,
                     bufsize=1,
+                    encoding="utf-8",
                     errors="replace",
                     start_new_session=True,
                 )
@@ -118,7 +119,11 @@ class Job:
     def cancel(self) -> None:
         self.cancelled = True
         if self.proc and self.proc.poll() is None:
-            # Kill the whole process group: downloaders spawn their own children (yt-dlp, ffmpeg, Chrome).
+            # Kill the whole process tree: downloaders spawn their own children (yt-dlp, ffmpeg, Chrome).
+            if os.name == "nt":
+                subprocess.call(["taskkill", "/F", "/T", "/PID", str(self.proc.pid)],
+                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return
             try:
                 os.killpg(self.proc.pid, signal.SIGTERM)
             except ProcessLookupError:
@@ -255,11 +260,28 @@ def serve_file(rel_path: str):
     return send_from_directory(get_download_dir(), rel_path)
 
 
-def _volumes() -> list[str]:
-    root = Path("/Volumes")
-    if not root.is_dir():
-        return []
-    return sorted(str(p) for p in root.iterdir() if p.is_dir() and not p.is_symlink() and p.name != "Macintosh HD")
+def _volumes() -> list[dict]:
+    """External/extra drives the user can pick as a download location."""
+    if sys.platform == "darwin":
+        root = Path("/Volumes")
+        candidates = [p for p in root.iterdir()
+                      if not p.is_symlink() and p.name != "Macintosh HD"] if root.is_dir() else []
+    elif os.name == "nt":
+        system = os.environ.get("SystemDrive", "C:").upper()
+        candidates = [Path(f"{letter}:\\") for letter in "DEFGHIJKLMNOPQRSTUVWXYZ"
+                      if f"{letter}:" != system and Path(f"{letter}:\\").exists()]
+    else:
+        user = os.environ.get("USER", "")
+        roots = [Path("/media") / user, Path("/run/media") / user, Path("/mnt")]
+        candidates = [p for root in roots if root.is_dir() for p in root.iterdir()]
+    drives = []
+    for path in sorted(candidates):
+        try:
+            if path.is_dir():
+                drives.append({"name": path.name or str(path).rstrip("\\"), "target": str(path / "InstaFBDown")})
+        except OSError:
+            continue
+    return drives
 
 
 def _settings_payload() -> dict:
@@ -319,8 +341,10 @@ def open_folder():
     download_dir = get_download_dir()
     if not download_dir.exists():
         return jsonify(error=f"{download_dir} is not available. Is the external drive plugged in?"), 400
-    opener = "open" if sys.platform == "darwin" else "xdg-open"
-    subprocess.Popen([opener, str(download_dir)])
+    if os.name == "nt":
+        os.startfile(download_dir)  # noqa: S606 - opens Explorer on a local folder
+    else:
+        subprocess.Popen(["open" if sys.platform == "darwin" else "xdg-open", str(download_dir)])
     return jsonify(ok=True)
 
 

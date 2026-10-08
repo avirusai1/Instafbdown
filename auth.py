@@ -26,11 +26,27 @@ SESSIONS_DIR = BASE_DIR / "sessions"
 PROFILES_DIR = SESSIONS_DIR / "profiles"
 LOGIN_TIMEOUT = 10 * 60
 
+def _windows_browser_paths() -> list[str]:
+    roots = [os.environ.get(v) for v in ("PROGRAMFILES", "PROGRAMFILES(X86)", "LOCALAPPDATA")]
+    apps = (
+        r"Google\Chrome\Application\chrome.exe",
+        r"BraveSoftware\Brave-Browser\Application\brave.exe",
+        r"Microsoft\Edge\Application\msedge.exe",
+        r"Chromium\Application\chrome.exe",
+    )
+    return [str(Path(root) / app) for app in apps for root in roots if root]
+
+
 BROWSER_PATHS = (
     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
     "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
     "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    *(_windows_browser_paths() if os.name == "nt" else ()),
+)
+LINUX_BROWSER_NAMES = (
+    "google-chrome", "google-chrome-stable", "chromium", "chromium-browser",
+    "brave-browser", "microsoft-edge", "microsoft-edge-stable",
 )
 
 SITES = {
@@ -104,7 +120,7 @@ def find_browser() -> str:
     for path in BROWSER_PATHS:
         if Path(path).exists():
             return path
-    for name in ("google-chrome", "chromium", "chromium-browser", "brave-browser"):
+    for name in LINUX_BROWSER_NAMES:
         found = shutil.which(name)
         if found:
             return found

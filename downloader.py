@@ -210,7 +210,7 @@ def find_tool(name: str) -> str | None:
 
 def subprocess_env() -> dict[str, str]:
     """Environment for child processes, with ffmpeg / JS runtimes on PATH."""
-    env = dict(os.environ, PYTHONUNBUFFERED="1")
+    env = dict(os.environ, PYTHONUNBUFFERED="1", PYTHONIOENCODING="utf-8")
     extra = [str(Path(p).parent) for p in (find_tool("ffmpeg"), find_tool("deno"), find_tool("node")) if p]
     env["PATH"] = os.pathsep.join(extra + [env.get("PATH", "")])
     return env

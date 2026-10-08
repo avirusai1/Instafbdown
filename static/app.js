@@ -260,9 +260,9 @@ function renderSettings(s) {
   for (const vol of s.volumes) {
     const btn = document.createElement("button");
     btn.className = "secondary small";
-    btn.textContent = `Use ${vol.split("/").pop()}`;
-    btn.title = `${vol}/InstaFBDown`;
-    btn.addEventListener("click", () => saveDownloadDir(`${vol}/InstaFBDown`));
+    btn.textContent = `Use ${vol.name}`;
+    btn.title = vol.target;
+    btn.addEventListener("click", () => saveDownloadDir(vol.target));
     box.appendChild(btn);
   }
 }

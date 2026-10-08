@@ -19,11 +19,27 @@ This guide covers installation, logging in, every download option, big Facebook 
 
 You need Python 3.10 or newer, ffmpeg, Node.js (or Deno), and Google Chrome (Brave, Edge or Chromium also work).
 
-On macOS with [Homebrew](https://brew.sh):
+> The tool is developed and tested on macOS. Windows and Linux are supported in the code but not yet tested. Please [report problems](https://github.com/avirusai1/Instafbdown/issues).
+
+**macOS** (with [Homebrew](https://brew.sh)):
 
 ```bash
 brew install python@3.12 ffmpeg node
 ```
+
+**Ubuntu / Debian:** install Google Chrome from [google.com/chrome](https://www.google.com/chrome/), then:
+
+```bash
+sudo apt install python3 python3-venv ffmpeg nodejs
+```
+
+**Windows** (PowerShell):
+
+```powershell
+winget install Python.Python.3.12 Gyan.FFmpeg OpenJS.NodeJS.LTS Google.Chrome
+```
+
+If you install Python from [python.org](https://www.python.org/downloads/) instead, tick **"Add python.exe to PATH"** in the installer. Open a new terminal after installing, so the new commands are found.
 
 Then get the code:
 
@@ -32,19 +48,24 @@ git clone https://github.com/avirusai1/Instafbdown.git
 cd Instafbdown
 ```
 
-There's nothing else to install by hand. `run.sh` creates a Python virtual environment (`.venv/`) and installs the Python packages (yt-dlp, gallery-dl, Flask) on first run.
+No git? On the GitHub page, click **Code → Download ZIP**, unzip it, and open a terminal in that folder.
+
+There's nothing else to install by hand. On first run, the launcher creates a Python virtual environment (`.venv/`) and installs the Python packages (yt-dlp, gallery-dl, Flask).
 
 ## 2. Start the tool
 
-```bash
-./run.sh
-```
+| System | Command |
+|---|---|
+| macOS / Linux | `./run.sh` |
+| Windows | `run.bat` |
 
 Open **http://127.0.0.1:5050** in your browser. Keep the terminal window open while you use the tool; closing it (or pressing `Ctrl+C`) stops the server and any running download.
 
 Each start also updates yt-dlp and gallery-dl. If downloads suddenly stop working, restarting the tool is often the fix.
 
-To use a different port: `PORT=5051 ./run.sh`.
+To use a different port: `PORT=5051 ./run.sh` (macOS/Linux) or `set PORT=5051 && run.bat` (Windows Command Prompt).
+
+> Throughout this guide, `./run.sh` commands work the same on Windows with `run.bat`.
 
 ## 3. Log in to Instagram and Facebook
 
@@ -144,7 +165,7 @@ downloads/
 
 In the **Downloaded files** section:
 
-- Click **Use <drive name>** (shown for every connected drive) to save into `<drive>/InstaFBDown`. Or type any full folder path and click **Change folder**.
+- Click **Use <drive name>** (shown for every connected drive) to save into `<drive>/InstaFBDown`. Or type any full folder path (for example `/Volumes/MyDrive/InstaFBDown` on macOS, `E:\InstaFBDown` on Windows, or `/media/you/MyDrive/InstaFBDown` on Linux) and click **Change folder**.
 - **Use default** switches back to the project's `downloads/` folder.
 - The free space of the chosen location is shown next to the path.
 - A new folder applies to **new** jobs; a job that's already running keeps its original folder.
@@ -177,11 +198,13 @@ These always stay in the project folder, even when media is saved to an external
 
 ## 9. Command line
 
-Everything in the web interface is also available from the terminal. `./run.sh cli` passes its arguments to `downloader.py`:
+Everything in the web interface is also available from the terminal. `./run.sh cli` (Windows: `run.bat cli`) passes its arguments to `downloader.py`:
 
 ```bash
 ./run.sh cli TARGET [options]
 ```
+
+On Windows, put links that contain `&` in double quotes, for example `run.bat cli "https://www.youtube.com/watch?v=VIDEO_ID&t=10"`.
 
 | Option | Meaning |
 |---|---|
@@ -223,7 +246,13 @@ That's normal for a login from a new browser. Complete it and the window closes 
 The window was closed before login finished. Click **Log in** again.
 
 **YouTube videos are only 360p, or merging fails.**
-ffmpeg is missing. Run `brew install ffmpeg` and restart the tool. The page shows a warning when ffmpeg isn't found.
+ffmpeg is missing. Install it (`brew install ffmpeg`, `sudo apt install ffmpeg`, or `winget install Gyan.FFmpeg`) and restart the tool. The page shows a warning when ffmpeg isn't found.
+
+**"Python 3.10+ is required" (or `python` isn't found on Windows).**
+Install Python 3.10 or newer (see [section 1](#1-install)). On Windows, make sure "Add python.exe to PATH" was ticked, then open a new terminal.
+
+**"Google Chrome (or Brave/Edge/Chromium) is required for login".**
+Install Google Chrome. On Linux, the browser must be on your PATH as `google-chrome`, `chromium`, `brave-browser` or `microsoft-edge`.
 
 **YouTube asks you to "sign in to confirm you're not a bot".**
 Open **Advanced options**, set **Use login from browser** to a browser where you're logged in to YouTube, and try again.

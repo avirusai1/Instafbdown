@@ -25,13 +25,26 @@ A local tool for downloading posts, reels, stories and videos from **Instagram**
 | Google Chrome (or Brave, Edge, Chromium) | Instagram/Facebook login and Facebook reels/videos |
 | Node.js or Deno | Needed by yt-dlp for full YouTube support |
 
-Developed and tested on macOS. On macOS with [Homebrew](https://brew.sh):
+**Platform support:** developed and tested on **macOS**. **Windows** and **Linux** are supported in the code but haven't been tested yet. If something doesn't work, please [open an issue](https://github.com/avirusai1/Instafbdown/issues).
+
+Install the requirements:
 
 ```bash
+# macOS (Homebrew)
 brew install python@3.12 ffmpeg node
+
+# Ubuntu / Debian (install Google Chrome separately from google.com/chrome)
+sudo apt install python3 python3-venv ffmpeg nodejs
+```
+
+```powershell
+# Windows (PowerShell); in the Python installer, tick "Add python.exe to PATH"
+winget install Python.Python.3.12 Gyan.FFmpeg OpenJS.NodeJS.LTS Google.Chrome
 ```
 
 ## Quick start
+
+**macOS / Linux**
 
 ```bash
 git clone https://github.com/avirusai1/Instafbdown.git
@@ -39,9 +52,17 @@ cd Instafbdown
 ./run.sh
 ```
 
+**Windows** (Command Prompt or PowerShell)
+
+```bat
+git clone https://github.com/avirusai1/Instafbdown.git
+cd Instafbdown
+run.bat
+```
+
 Then open **http://127.0.0.1:5050** in your browser.
 
-On first run, `run.sh` creates a virtual environment and installs the Python dependencies. On every run it also updates the downloaders, because these sites change often and fixes ship frequently.
+On first run, the launcher (`run.sh` or `run.bat`) creates a virtual environment and installs the Python dependencies. On every run it also updates the downloaders, because these sites change often and fixes ship frequently. No git? Use **Code → Download ZIP** on GitHub, unzip it, and run the launcher from that folder.
 
 For Instagram and Facebook, click **Log in** in the *Accounts* panel first. Both sites show very little to logged-out visitors.
 
@@ -56,6 +77,8 @@ For Instagram and Facebook, click **Log in** in the *Accounts* panel first. Both
 ./run.sh login instagram                                     # log in from the terminal
 ./run.sh cli --help
 ```
+
+On Windows, use `run.bat` in place of `./run.sh` (for example `run.bat cli @NASA -p youtube -n 5`).
 
 ## How it works
 
@@ -72,7 +95,7 @@ app.py           Web server, job queue, file browser, settings
 downloader.py    Turns your input into downloader commands; also the CLI
 auth.py          Built-in Instagram/Facebook login
 fb_collect.py    Facebook Reels/Videos tab collector with batching
-run.sh           Setup + launcher
+run.sh, run.bat  Setup + launcher (macOS/Linux, Windows)
 templates/, static/   Web interface
 ```
 
@@ -82,6 +105,14 @@ templates/, static/   Web interface
 - **Login sessions are saved in `sessions/`,** readable only by your user account. Treat this folder like a password: anyone who has it can act as your account. Use *Log out* in the interface to delete a session.
 - **These are never committed to git:** `sessions/`, `downloads/` and `settings.json` are excluded in `.gitignore`.
 - **Bulk downloading can get an account rate-limited or temporarily blocked,** especially on Instagram. Use *Max items* and batching, and consider a secondary account.
+
+## Contributing
+
+Bug reports and pull requests are welcome. If a site changes and downloads break, first restart the tool: the launcher updates yt-dlp and gallery-dl on every start. If that doesn't help, [open an issue](https://github.com/avirusai1/Instafbdown/issues) with the log from the Jobs panel, and remove any usernames or links you don't want to share.
+
+## License
+
+[GNU General Public License v3.0](LICENSE). You're free to use, study, modify and share this software. If you distribute a modified version, it must also be released under the GPL-3.0 with its source code.
 
 ## Disclaimer
 
