@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>InstaFBDown — Local Media Downloader</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <h1>InstaFBDown</h1>
+    <p class="sub">Local downloader for Instagram, Facebook and YouTube. For personal and educational use only.</p>
+  </header>
+
+  {% if not has_ffmpeg %}
+  <div class="banner warn">ffmpeg was not found. YouTube videos above 360p need it: <code>brew install ffmpeg</code></div>
+  {% endif %}
+
+  <main>
+    <section class="card">
+      <h2>Accounts</h2>
+      <p class="hint">Instagram and Facebook hide most content from logged-out visitors. Click <b>Log in</b>: a
+        browser window opens on the real login page (2FA works), and it closes by itself once you're in.
+        The session is saved on this Mac only, in <code>sessions/</code>.</p>
+      <div id="accounts" class="accounts"></div>
+
+      <h2 class="spaced">New download</h2>
+      <form id="form" autocomplete="off">
+        <label class="field">
+          <span>Username, ID, @handle or link</span>
+          <input id="target" placeholder="e.g. natgeo · @NASA · https://www.youtube.com/@NASA · 100044..." required>
+        </label>
+
+        <div class="row">
+          <label class="field">
+            <span>Platform</span>
+            <select id="platform">
+              <option value="">Auto-detect from link</option>
+              <option value="instagram">Instagram</option>
+              <option value="facebook">Facebook</option>
+              <option value="youtube">YouTube</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Max items <small>(blank = all)</small></span>
+            <input id="limit" type="number" min="1" placeholder="All">
+          </label>
+          <label class="field hidden" id="batch-field">
+            <span>Batch size <small>(reels/videos)</small></span>
+            <input id="batch_size" type="number" min="1" value="100">
+          </label>
+          <label class="field" id="quality-field">
+            <span>Video quality</span>
+            <select id="quality">
+              {% for key, label in qualities.items() %}
+              <option value="{{ key }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+
+        <div class="field">
+          <span>What to download <small id="detected"></small></span>
+          <div id="types" class="chips"><em class="muted">Enter a link or choose a platform</em></div>
+          <small class="muted">Single post, reel or video links work too. Facebook videos/reels: paste the video link.</small>
+        </div>
+
+        <details>
+          <summary>Advanced options</summary>
+          <p class="hint">Normally you don't need these: the account you logged in with above is used automatically.
+            These override it with cookies from another browser or a cookies.txt file.</p>
+          <div class="row">
+            <label class="field">
+              <span>Use login from browser</span>
+              <select id="browser">
+                <option value="">Don't use (default)</option>
+                {% for b in browsers %}<option value="{{ b }}">{{ b|capitalize }}</option>{% endfor %}
+              </select>
+            </label>
+            <label class="field grow">
+              <span>…or cookies.txt file path</span>
+              <input id="cookies_file" placeholder="/Users/you/cookies.txt">
+            </label>
+          </div>
+          <label class="check"><input type="checkbox" id="metadata"> Also save captions / descriptions (JSON)</label>
+        </details>
+
+        <div class="actions">
+          <button type="submit" id="submit">Start download</button>
+          <span id="form-error" class="error"></span>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Jobs</h2>
+      </div>
+      <div id="jobs" class="jobs"><em class="muted">No downloads yet.</em></div>
+      <pre id="log" class="log hidden"></pre>
+    </section>
+
+    <section class="card wide">
+      <div class="card-head">
+        <h2>Downloaded files</h2>
+        <div>
+          <button class="secondary" id="refresh-files">Refresh</button>
+          <button class="secondary" id="open-folder">Open folder</button>
+        </div>
+      </div>
+      <div class="folder">
+        <div class="folder-current">
+          Saving to <code id="dl-dir">…</code> <span id="dl-free" class="muted"></span>
+        </div>
+        <div class="row folder-edit">
+          <input id="dl-dir-input" placeholder="/Volumes/MyDrive/InstaFBDown">
+          <button class="secondary" id="dl-dir-save">Change folder</button>
+          <button class="secondary" id="dl-dir-reset">Use default</button>
+        </div>
+        <div id="dl-volumes" class="chips"></div>
+        <span id="dl-dir-error" class="error"></span>
+        <p class="hint">Already-downloaded items are remembered on this laptop, so you can move finished videos
+          anywhere (e.g. an external drive) and they won't be downloaded again. A new folder applies to new jobs.</p>
+      </div>
+      <div id="files" class="grid"><em class="muted">Nothing downloaded yet.</em></div>
+    </section>
+  </main>
+
+  <script>
+    window.CONFIG = {
+      contentTypes: {{ content_types|tojson }},
+      defaultTypes: {{ default_types|tojson }},
+    };
+  </script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
